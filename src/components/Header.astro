@@ -1,0 +1,127 @@
+---
+interface Props {
+  active?: "inicio" | "reservar";
+}
+
+const { active = "inicio" } = Astro.props;
+
+const links: { href: string; label: string; id: "inicio" | "reservar" }[] = [
+  { href: "/", label: "Inicio", id: "inicio" },
+  { href: "/#servicios", label: "Servicios", id: "inicio" },
+  { href: "/reservar", label: "Reservar", id: "reservar" },
+];
+---
+
+<header class="pointer-events-none fixed inset-x-0 top-4 z-40 flex justify-center px-4 sm:top-6 sm:px-6">
+  <nav
+    class="pointer-events-auto flex w-full max-w-3xl items-center justify-between gap-4 rounded-full px-3 py-2 backdrop-blur-xl"
+    style="background: rgba(250, 244, 234, 0.78); border: 1px solid rgba(31, 24, 18, 0.08); box-shadow: 0 8px 28px -12px rgba(31, 24, 18, 0.22);"
+    aria-label="Navegación principal"
+  >
+    <a href="/" class="flex items-center gap-2 rounded-full px-3 py-1.5">
+      <span
+        aria-hidden="true"
+        class="inline-flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-medium"
+        style="background: var(--color-clay); color: var(--color-paper-2);"
+      >
+        Au
+      </span>
+      <span class="text-[15px] font-medium tracking-tight text-[var(--color-ink)]">
+        Estética Aurora
+      </span>
+    </a>
+
+    <ul class="hidden items-center gap-1 md:flex">
+      {
+        links.map((l) => (
+          <li>
+            <a
+              href={l.href}
+              class:list={[
+                "rounded-full px-3 py-1.5 text-[14px] transition-colors duration-500",
+                active === l.id
+                  ? "text-[var(--color-ink)]"
+                  : "text-[var(--color-ink-2)] hover:text-[var(--color-ink)]",
+              ]}
+              aria-current={active === l.id ? "page" : undefined}
+            >
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a
+      href="/reservar"
+      class="btn-pill btn-primary !py-2 !px-4 text-[14px]"
+    >
+      <span>Reservar turno</span>
+      <span class="icon-bubble !h-4 !w-4" aria-hidden="true">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M1 5h8M5 1l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+
+    <!-- Mobile menu trigger -->
+    <button
+      id="mobile-menu-btn"
+      type="button"
+      class="inline-flex h-9 w-9 items-center justify-center rounded-full md:hidden"
+      style="background: rgba(31, 24, 18, 0.06); color: var(--color-ink);"
+      aria-controls="mobile-menu"
+      aria-expanded="false"
+      aria-label="Abrir menú"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+    </button>
+  </nav>
+
+  <!-- Mobile drawer -->
+  <div
+    id="mobile-menu"
+    hidden
+    class="pointer-events-auto absolute inset-x-4 top-[calc(100%+0.5rem)] rounded-3xl p-4 sm:inset-x-6"
+    style="background: var(--color-paper-2); border: 1px solid rgba(31, 24, 18, 0.1); box-shadow: 0 12px 40px -16px rgba(31, 24, 18, 0.3);"
+  >
+    <ul class="flex flex-col gap-1">
+      {
+        links.map((l) => (
+          <li>
+            <a
+              href={l.href}
+              class="block rounded-2xl px-4 py-3 text-[15px] text-[var(--color-ink)] hover:bg-[rgba(31,24,18,0.04)]"
+            >
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+      <li class="mt-2">
+        <a href="/reservar" class="btn-pill btn-primary w-full justify-center">
+          <span>Reservar turno</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById("mobile-menu-btn");
+  const menu = document.getElementById("mobile-menu");
+  if (btn && menu) {
+    btn.addEventListener("click", () => {
+      const open = menu.hasAttribute("hidden");
+      if (open) {
+        menu.removeAttribute("hidden");
+        btn.setAttribute("aria-expanded", "true");
+      } else {
+        menu.setAttribute("hidden", "");
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+</script>

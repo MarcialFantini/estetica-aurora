@@ -1,0 +1,30 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import Confirmation from "../../components/booking/Confirmation";
+
+export const prerender = false;
+
+const { codigo } = Astro.params;
+
+if (!codigo || typeof codigo !== "string") {
+  return Astro.redirect("/reservar");
+}
+---
+
+<Base
+  title={`Reserva ${codigo} - Estética Aurora`}
+  description="Tu reserva en Estética Aurora está confirmada."
+  active="reservar"
+>
+  <Header slot="header" active="reservar" />
+
+  <section class="container-x pt-28 sm:pt-36">
+    <div class="mx-auto max-w-3xl">
+      <Confirmation codigo={codigo} client:load />
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

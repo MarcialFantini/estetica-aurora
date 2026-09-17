@@ -1,0 +1,91 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import BookingIsland from "../components/booking/BookingIsland";
+
+// Read query string (Astro SSR).
+const url = Astro.url;
+const prefProfesionalId = url.searchParams.get("profesional") ?? undefined;
+---
+
+<Base
+  title="Reservar turno - Estética Aurora"
+  description="Reservá tu turno en Estética Aurora en menos de un minuto. Sin llamadas, sin esperar."
+  active="reservar"
+>
+  <Header slot="header" active="reservar" />
+
+  <section class="container-x pt-28 sm:pt-36">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <aside class="reveal lg:col-span-5 lg:sticky lg:top-32 lg:self-start">
+        <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+          Reservar
+        </p>
+        <h1 class="display-italic mt-3 font-display text-[clamp(2.2rem,5.5vw,4.2rem)] leading-[1.04] text-[var(--color-ink)]">
+          Sacá tu <em>turno</em> en menos de un minuto.
+        </h1>
+        <p class="mt-6 max-w-[42ch] text-[16px] leading-relaxed text-[var(--color-ink-2)]">
+          Servicio, profesional, día y hora. Te confirmamos al instante y guardamos tu
+          reserva en este navegador para que no se te pierda.
+        </p>
+
+        <dl class="mt-10 grid gap-4 text-[14px]">
+          <div class="flex gap-3">
+            <dt
+              class="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full font-mono text-[12px] tabular-nums"
+              style="background: var(--color-clay); color: var(--color-paper-2);"
+            >
+              1
+            </dt>
+            <dd class="text-[var(--color-ink-2)]">
+              <span class="font-medium text-[var(--color-ink)]">Elegís servicio y profesional</span>
+              <br />
+              Color, corte, brushing, tratamiento o diseño de barba.
+            </dd>
+          </div>
+          <div class="flex gap-3">
+            <dt
+              class="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full font-mono text-[12px] tabular-nums"
+              style="background: var(--color-clay); color: var(--color-paper-2);"
+            >
+              2
+            </dt>
+            <dd class="text-[var(--color-ink-2)]">
+              <span class="font-medium text-[var(--color-ink)]">Ves los horarios libres</span>
+              <br />
+              Slots tachados ya están ocupados. Los demás son tuyos.
+            </dd>
+          </div>
+          <div class="flex gap-3">
+            <dt
+              class="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full font-mono text-[12px] tabular-nums"
+              style="background: var(--color-clay); color: var(--color-paper-2);"
+            >
+              3
+            </dt>
+            <dd class="text-[var(--color-ink-2)]">
+              <span class="font-medium text-[var(--color-ink)]">Confirmás tus datos</span>
+              <br />
+              Te llevamos al comprobante con tu código.
+            </dd>
+          </div>
+        </dl>
+
+        <p
+          class="mt-10 rounded-[var(--radius-input)] border border-[rgba(31,24,18,0.1)] p-4 text-[13px] leading-relaxed text-[var(--color-ink-2)]"
+          style="background: var(--color-paper-3);"
+        >
+          <strong class="font-medium text-[var(--color-ink)]">Importante</strong>: Esta es una
+          simulación. La reserva se guarda únicamente en este navegador, no en un servidor.
+        </p>
+      </aside>
+
+      <div class="reveal lg:col-span-7">
+        <BookingIsland prefProfesionalId={prefProfesionalId} client:load />
+      </div>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

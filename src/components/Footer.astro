@@ -1,0 +1,77 @@
+---
+import { DIAS_SEMANA, HORARIO_INICIO_STR, HORARIO_FIN_STR } from "../lib/horarios";
+import { profesionalPorId } from "../data/servicios";
+
+const today = new Date();
+const year = today.getFullYear();
+---
+
+<footer class="mt-32 sm:mt-40">
+  <div class="container-x">
+    <div class="bezel-shell">
+      <div class="bezel-core grid gap-12 px-6 py-12 sm:grid-cols-12 sm:px-10 sm:py-16">
+        <div class="sm:col-span-5">
+          <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+            Estética Aurora
+          </p>
+          <h2 class="display-italic mt-4 font-display text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
+            Un lugar para volver <em>cada vez que necesitás</em> sentirte bien.
+          </h2>
+          <p class="mt-6 max-w-[36ch] text-[15px] leading-relaxed text-[var(--color-ink-2)]">
+            Peluquería unisex en el centro de la ciudad. Atención con turno previo,
+            ambiente tranquilo y un equipo que se toma el tiempo necesario.
+          </p>
+        </div>
+
+        <div class="sm:col-span-3">
+          <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+            Visitas
+          </p>
+          <p class="mt-4 text-[15px] leading-relaxed text-[var(--color-ink)]">
+            Av. de los Aromos 1420<br />
+            Centro, entre 9 de Julio y San Martín
+          </p>
+          <p class="mt-4 text-[14px] leading-relaxed text-[var(--color-ink-2)]">
+            <a class="underline decoration-[rgba(31,24,18,0.18)] underline-offset-4 hover:decoration-[var(--color-clay)]" href="tel:+5491145551234">
+              +54 9 11 4555-1234
+            </a>
+          </p>
+        </div>
+
+        <div class="sm:col-span-4">
+          <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+            Horarios
+          </p>
+          <ul class="mt-4 grid grid-cols-2 gap-y-2 text-[14px] leading-relaxed text-[var(--color-ink)]">
+            <li class="text-[var(--color-ink-2)]">Lunes a viernes</li>
+            <li class="text-right font-mono tabular-nums">{HORARIO_INICIO_STR} - {HORARIO_FIN_STR}</li>
+            <li class="text-[var(--color-ink-2)]">Sábados</li>
+            <li class="text-right font-mono tabular-nums">{HORARIO_INICIO_STR} - {HORARIO_FIN_STR}</li>
+            <li class="text-[var(--color-ink-2)]">{DIAS_SEMANA[6]}</li>
+            <li class="text-right text-[var(--color-muted)]">Cerrado</li>
+          </ul>
+
+          <div class="mt-8">
+            <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+              Equipo
+            </p>
+            <ul class="mt-3 space-y-1 text-[14px] leading-relaxed text-[var(--color-ink)]">
+              {profesionalPorId("ana") && <li>{profesionalPorId("ana")!.nombre}</li>}
+              {profesionalPorId("bruno") && <li>{profesionalPorId("bruno")!.nombre}</li>}
+              {profesionalPorId("camila") && <li>{profesionalPorId("camila")!.nombre}</li>}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-col gap-3 px-2 pb-12 text-[12px] text-[var(--color-ink-2)] sm:flex-row sm:items-center sm:justify-between">
+      <p>
+        © {year} Estética Aurora. Atención con reserva previa.
+      </p>
+      <p class="text-[var(--color-muted)]">
+        Reservas simuladas · Los datos se guardan únicamente en este navegador
+      </p>
+    </div>
+  </div>
+</footer>

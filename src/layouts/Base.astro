@@ -1,0 +1,61 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Path to active route, used by the nav to mark current page. */
+  active?: "inicio" | "reservar";
+}
+
+const {
+  title = "Estética Aurora - Reservas online",
+  description = "Reservá tu turno en Estética Aurora, peluquería unisex. Sin llamadas, sin esperar, sin superposiciones.",
+} = Astro.props;
+
+// Fonts via Bunny Fonts (privacy-respecting Google Fonts mirror). Self-host fallback in CSS.
+const fontHref =
+  "https://fonts.bunny.net/css?family=fraunces:400,500,600,700,400-italic,500-italic|geist:300,400,500,600,700|geist-mono:400,500&display=swap";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f4ece1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin />
+    <link rel="stylesheet" href={fontHref} />
+    <title>{title}</title>
+  </head>
+  <body class="grain min-h-[100dvh]">
+    <slot name="header" />
+    <main id="main">
+        <slot />
+      </main>
+    <slot name="footer" />
+
+    <!-- Reveal-on-scroll: cheap IntersectionObserver, no library. -->
+    <script>
+      const els = document.querySelectorAll<HTMLElement>(".reveal");
+      if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add("is-visible");
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: "0px 0px -10% 0px", threshold: 0.1 },
+        );
+        els.forEach((el) => io.observe(el));
+      } else {
+        els.forEach((el) => el.classList.add("is-visible"));
+      }
+    </script>
+  </body>
+</html>
