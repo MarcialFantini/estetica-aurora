@@ -39,6 +39,13 @@ export const buscarReservaPorCodigo = (codigo: string): Reserva | undefined => {
   return todas.find((r) => r.codigo === codigo);
 };
 
+export const eliminarReservaPorCodigo = (codigo: string): Reserva[] => {
+  const actuales = cargarReservas();
+  const siguientes = actuales.filter((r) => r.codigo !== codigo);
+  guardarReservas(siguientes);
+  return siguientes;
+};
+
 /**
  * Returns the set of HH:MM slots that are already occupied by a professional
  * on a given date. A reservation blocks its starting slot and any subsequent
@@ -61,6 +68,24 @@ export const slotsOcupados = (
     }
   }
   return out;
+};
+
+/**
+ * Count reservations assigned to a given professional (or "cualquiera") on a
+ * specific date. Used to throttle availability per day — when the count
+ * crosses the saturation threshold the picker hides the professional.
+ */
+export const contarReservasPorProfesionalEnFecha = (
+  reservas: Reserva[],
+  fecha: string,
+  profesionalId: string,
+): number => {
+  let n = 0;
+  for (const r of reservas) {
+    if (r.fecha !== fecha) continue;
+    if (r.profesionalId === profesionalId) n++;
+  }
+  return n;
 };
 
 /**

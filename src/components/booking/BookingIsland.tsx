@@ -11,6 +11,7 @@ import type {
 } from "../../lib/types";
 import {
   cargarReservas,
+  contarReservasPorProfesionalEnFecha,
   guardarReservas,
   slotsOcupados,
   validarSlotLibre,
@@ -28,6 +29,15 @@ import {
   isoWeekday,
   toIsoDate,
 } from "../../lib/horarios";
+import {
+  agregadosPorEstilistas,
+  type RatingAggregate,
+} from "../../lib/ratings";
+import { RatingStarsDisplay } from "./RatingStars";
+
+/** Saturation threshold per professional per day — at or above this,
+ *  the picker marks the professional as "Sin disponibilidad ese día". */
+const MAX_RESERVAS_POR_PROFESIONAL_DIA = 3;
 
 interface BookingIslandProps {
   /** Professional pre-selected from query string (optional). */
@@ -64,10 +74,12 @@ export default function BookingIsland(_: BookingIslandProps): JSX.Element {
 
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [aggregates, setAggregates] = useState<Record<string, RatingAggregate>>({});
 
   useEffect(() => {
     setReservas(cargarReservas());
     setHydrated(true);
+    setAggregates(agregadosPorEstilistas(profesionales.map((p) => p.id)));
   }, []);
 
   const servicio: Servicio | undefined = servicioId
@@ -152,6 +164,9 @@ export default function BookingIsland(_: BookingIslandProps): JSX.Element {
           {step === "profesional" && servicio && (
             <ProfesionalStep
               profesionales={profesionales}
+              reservas={reservas}
+              referenceFecha={fecha}
+              aggregates={aggregates}
               value={profesionalId}
               onChange={setProfesionalId}
               onBack={() => setStep("servicio")}
@@ -161,6 +176,8 @@ export default function BookingIsland(_: BookingIslandProps): JSX.Element {
 
           {step === "fecha" && servicio && (
             <FechaStep
+              profesionales={profesionales}
+              reservas={reservas}
               profesionalesDisponibles={professionalsDisponiblesParaFecha(
                 profesionales,
                 fecha,
@@ -358,17 +375,38 @@ function ServicioStep({
 
 function ProfesionalStep({
   profesionales: all,
+  reservas,
+  referenceFecha,
+  aggregates,
   value,
   onChange,
   onBack,
   onContinue,
 }: {
   profesionales: Profesional[];
+  reservas: Reserva[];
+  /** Date the saturation check is anchored to. Falls back to today when
+   *  the user hasn't picked one yet (this step comes before fecha in the
+   *  current flow). */
+  referenceFecha: string | null;
+  aggregates: Record<string, RatingAggregate>;
   value: ProfesionalId | "cualquiera";
   onChange: (v: ProfesionalId | "cualquiera") => void;
   onBack: () => void;
   onContinue: () => void;
 }): JSX.Element {
+  // For the saturation hint we anchor on referenceFecha; if absent, use today.
+  const refFecha = referenceFecha ?? toIsoDate(new Date());
+  const saturados = new Set<string>();
+  const libres: Profesional[] = [];
+  for (const p of all) {
+    const n = contarReservasPorProfesionalEnFecha(reservas, refFecha, p.id);
+    if (n >= MAX_RESERVAS_POR_PROFESIONAL_DIA) saturados.add(p.id);
+    else libres.push(p);
+  }
+  const allSaturated = libres.length === 0;
+  const saturadosCount = saturados.size;
+
   return (
     <div>
       <header>
@@ -383,26 +421,52 @@ function ProfesionalStep({
         </p>
       </header>
 
+      {allSaturated && (
+        <p class="mt-6 rounded-[var(--radius-input)] border border-[rgba(122,61,46,0.25)] bg-[rgba(122,61,46,0.06)] px-4 py-3 text-[14px] text-[var(--color-clay)]">
+          Para {referenceFecha ? "esa fecha" : "hoy"} todas las profesionales tienen la
+          agenda llena. Elegí <em>Cualquiera disponible</em> para que te asignemos
+          un reemplazo o cambiá el día.
+        </p>
+      )}
+
+      {!allSaturated && saturadosCount > 0 && (
+        <p class="mt-6 text-[12px] text-[var(--color-muted)]">
+          {saturadosCount} profesional{saturadosCount === 1 ? " tiene" : "es tienen"} la
+          agenda completa{" "}
+          {referenceFecha ? "para ese día" : "hoy"}. Probá con otra fecha o dejá que
+          asignemos a alguien disponible.
+        </p>
+      )}
+
       <ul class="mt-8 grid gap-3 sm:grid-cols-2">
         <ProfesionalCard
           id="cualquiera"
           nombre="Cualquiera disponible"
           bio="Asignamos a la primera profesional con horario libre ese día."
           anios={null}
+          rating={null}
+          saturada={false}
           selected={value === "cualquiera"}
           onClick={() => onChange("cualquiera")}
         />
-        {all.map((p) => (
-          <ProfesionalCard
-            key={p.id}
-            id={p.id}
-            nombre={p.nombre}
-            bio={p.bio}
-            anios={p.aniosExperiencia}
-            selected={value === p.id}
-            onClick={() => onChange(p.id)}
-          />
-        ))}
+        {all.map((p) => {
+          const sat = saturados.has(p.id);
+          const agg = aggregates[p.id] ?? { count: 0, promedio: 0 };
+          return (
+            <ProfesionalCard
+              key={p.id}
+              id={p.id}
+              nombre={p.nombre}
+              bio={p.bio}
+              anios={p.aniosExperiencia}
+              rating={agg}
+              saturada={sat}
+              selected={value === p.id && !sat}
+              disabled={sat}
+              onClick={() => !sat && onChange(p.id)}
+            />
+          );
+        })}
       </ul>
 
       <div class="mt-8 flex justify-between">
@@ -426,30 +490,53 @@ function ProfesionalCard({
   nombre,
   bio,
   anios,
+  rating,
+  saturada,
   selected,
+  disabled = false,
   onClick,
 }: {
   id: string;
   nombre: string;
   bio: string;
   anios: number | null;
+  rating: RatingAggregate | null;
+  saturada: boolean;
   selected: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }): JSX.Element {
+  // "Sin disponibilidad ese día" cards are dimmed, non-interactive and
+  // visually marked with a sage chip so the user knows the constraint is
+  // a daily cap, not a permanent unavailability.
+  const isInactive = disabled || saturada;
+
   return (
     <li>
       <button
         type="button"
-        class="w-full rounded-[var(--radius-card)] p-5 text-left transition-all duration-500"
+        class="relative w-full rounded-[var(--radius-card)] p-5 text-left transition-all duration-500"
         style={{
-          background: selected ? "var(--color-clay)" : "var(--color-paper-3)",
-          color: selected ? "var(--color-paper-2)" : "var(--color-ink)",
+          background: selected
+            ? "var(--color-clay)"
+            : isInactive
+            ? "rgba(31,24,18,0.04)"
+            : "var(--color-paper-3)",
+          color: selected
+            ? "var(--color-paper-2)"
+            : isInactive
+            ? "var(--color-muted)"
+            : "var(--color-ink)",
           border: selected
             ? "1px solid var(--color-clay)"
             : "1px solid rgba(31,24,18,0.08)",
+          cursor: isInactive ? "not-allowed" : "pointer",
+          opacity: isInactive && !selected ? 0.72 : 1,
         }}
         onClick={onClick}
+        disabled={isInactive}
         aria-pressed={selected}
+        aria-disabled={isInactive}
       >
         <div class="flex items-baseline justify-between gap-3">
           <span class="font-serif text-[19px] leading-[1.15]">{nombre}</span>
@@ -466,6 +553,17 @@ function ProfesionalCard({
             </span>
           )}
         </div>
+
+        {rating !== null && (
+          <div class="mt-2">
+            <RatingStarsDisplay
+              promedio={rating.promedio}
+              count={rating.count}
+              size="sm"
+            />
+          </div>
+        )}
+
         <p
           class="mt-3 text-[14px] leading-relaxed"
           style={{
@@ -476,6 +574,20 @@ function ProfesionalCard({
         >
           {bio}
         </p>
+
+        {saturada && (
+          <span
+            class="mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-medium"
+            style="background: rgba(122,130,102,0.18); color: #4d5534;"
+          >
+            <span
+              aria-hidden="true"
+              class="inline-block h-1.5 w-1.5 rounded-full"
+              style="background: #4d5534;"
+            />
+            Sin disponibilidad ese día
+          </span>
+        )}
       </button>
     </li>
   );
@@ -493,12 +605,16 @@ function professionalsDisponiblesParaFecha(
 }
 
 function FechaStep({
+  profesionales: all,
+  reservas,
   profesionalesDisponibles,
   value,
   onChange,
   onBack,
   onContinue,
 }: {
+  profesionales: Profesional[];
+  reservas: Reserva[];
   profesionalesDisponibles: Profesional[];
   value: string | null;
   onChange: (d: string) => void;
@@ -568,6 +684,24 @@ function FechaStep({
         <p class="mt-6 rounded-[var(--radius-input)] border border-[rgba(122,61,46,0.25)] bg-[rgba(122,61,46,0.06)] px-4 py-3 text-[14px] text-[var(--color-clay)]">
           Para esa fecha no hay profesionales disponibles. Probá con otro día o cambiá la
           selección de profesional.
+        </p>
+      )}
+
+      {value && available && (
+        <p class="mt-6 text-[12px] text-[var(--color-muted)]">
+          {(() => {
+            const sat = all.filter((p) =>
+              profesionalesDisponibles.some((d) => d.id === p.id),
+            ).filter((p) =>
+              contarReservasPorProfesionalEnFecha(reservas, value, p.id) >=
+              MAX_RESERVAS_POR_PROFESIONAL_DIA,
+            ).length;
+            const libres = profesionalesDisponibles.length - sat;
+            if (libres === 0) {
+              return "Para ese día todas las profesionales están saturadas. Si confirmás, te asignamos a la primera que se libere.";
+            }
+            return `${libres} profesional${libres === 1 ? "" : "es"} disponible${libres === 1 ? "" : "s"} para ese día${sat > 0 ? ` · ${sat} saturada${sat === 1 ? "" : "s"}` : ""}.`;
+          })()}
         </p>
       )}
 
