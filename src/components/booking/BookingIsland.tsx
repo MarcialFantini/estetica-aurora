@@ -260,7 +260,7 @@ function ServicioStep({
         <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
           Paso 1
         </p>
-        <h2 class="mt-2 font-display text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
+        <h2 class="mt-2 font-serif text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
           ¿Qué servicio necesitás?
         </h2>
         <p class="mt-3 max-w-[52ch] text-[15px] leading-relaxed text-[var(--color-ink-2)]">
@@ -290,7 +290,7 @@ function ServicioStep({
                 aria-pressed={selected}
               >
                 <div class="flex items-baseline justify-between gap-3">
-                  <span class="font-display text-[19px] leading-[1.15]">{s.nombre}</span>
+                  <span class="font-serif text-[19px] leading-[1.15]">{s.nombre}</span>
                   <span
                     class="font-mono text-[12px] tabular-nums"
                     style={{
@@ -320,7 +320,13 @@ function ServicioStep({
                       : "var(--color-muted)",
                   }}
                 >
-                  <span aria-hidden="true">⏱</span> {s.duracionMin} min
+                  <span aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                      <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.25" />
+                      <path d="M6 3.25V6L7.75 7.25" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  {s.duracionMin} min
                 </p>
               </button>
             </li>
@@ -369,7 +375,7 @@ function ProfesionalStep({
         <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
           Paso 2
         </p>
-        <h2 class="mt-2 font-display text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
+        <h2 class="mt-2 font-serif text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
           ¿Con quién te atendés?
         </h2>
         <p class="mt-3 max-w-[52ch] text-[15px] leading-relaxed text-[var(--color-ink-2)]">
@@ -446,7 +452,7 @@ function ProfesionalCard({
         aria-pressed={selected}
       >
         <div class="flex items-baseline justify-between gap-3">
-          <span class="font-display text-[19px] leading-[1.15]">{nombre}</span>
+          <span class="font-serif text-[19px] leading-[1.15]">{nombre}</span>
           {anios !== null && (
             <span
               class="font-mono text-[11px] tabular-nums"
@@ -549,7 +555,7 @@ function FechaStep({
         <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
           Paso 3
         </p>
-        <h2 class="mt-2 font-display text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
+        <h2 class="mt-2 font-serif text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
           Elegí el día
         </h2>
         <p class="mt-3 max-w-[52ch] text-[15px] leading-relaxed text-[var(--color-ink-2)]">
@@ -582,7 +588,7 @@ function FechaStep({
               <path d="M8 2 4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
-          <span class="font-display text-[16px] capitalize text-[var(--color-ink)]">
+          <span class="font-serif text-[16px] capitalize text-[var(--color-ink)]">
             {MESES[cursor.m]} {cursor.y}
           </span>
           <button
@@ -699,7 +705,7 @@ function HoraStep({
         <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
           Paso 4
         </p>
-        <h2 class="mt-2 font-display text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
+        <h2 class="mt-2 font-serif text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
           {formatFechaLarga(fecha)}
         </h2>
         <p class="mt-3 max-w-[52ch] text-[15px] leading-relaxed text-[var(--color-ink-2)]">
@@ -804,7 +810,7 @@ function DatosStep({
         <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
           Paso 5
         </p>
-        <h2 class="mt-2 font-display text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
+        <h2 class="mt-2 font-serif text-[28px] leading-[1.1] text-[var(--color-ink)] sm:text-[32px]">
           Tus datos
         </h2>
       </header>

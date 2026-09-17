@@ -1,11 +1,43 @@
 @import "tailwindcss";
 
 /*
+ * Fonts - self-hosted via @fontsource (latin subset only).
+ * Geist comes as a variable font (wght.css is the axis subset, not the full index.css).
+ * Fraunces and Geist Mono expose explicit latin-NNN.css files; we pick the weights used in markup.
+ */
+@import "@fontsource/fraunces/latin-400.css";
+@import "@fontsource/fraunces/latin-400-italic.css";
+@import "@fontsource/fraunces/latin-500.css";
+@import "@fontsource/fraunces/latin-500-italic.css";
+@import "@fontsource/fraunces/latin-600.css";
+@import "@fontsource/fraunces/latin-600-italic.css";
+@import "@fontsource/geist-mono/latin-400.css";
+@import "@fontsource/geist-mono/latin-500.css";
+
+/*
+ * Geist Variable - the package only ships wght.css which imports all charsets.
+ * Declare @font-face manually so only the latin woff2 is bundled.
+ * Variable axis 100-900 covers Light to Bold weights used in UI.
+ */
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/geist/files/geist-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
  * Estética Aurora - design tokens
  *
  * Warm dawn palette. Distinct from the AI-default cream+brass+espresso stack.
  * One accent (clay/terracotta #7A3D2E), one secondary (dusty rose), warm paper background.
  * WCAG AA contrast verified: ink on paper ≈ 12:1; accent on paper ≈ 7.4:1.
+ *
+ * Tailwind v4 @theme registers CSS variables AND generates utility classes.
+ * aurora-* aliases expose the same palette under the spec-required utility names
+ * (bg-aurora-paper, text-aurora-clay, etc.) without renaming the source variables.
  */
 
 @theme {
@@ -29,9 +61,21 @@
   --color-busy: #7a3d2e;
   --color-past: #b6a796;
 
+  /* Aurora-* aliases: same palette, spec-friendly class names (hex values,
+   * not var() references, so Tailwind v4 generates the utility classes). */
+  --color-aurora-paper: #f4ece1;
+  --color-aurora-paper-2: #faf4ea;
+  --color-aurora-paper-3: #ecdfcb;
+  --color-aurora-ink: #1f1812;
+  --color-aurora-ink-2: #4a3e35;
+  --color-aurora-muted: #8a7a6b;
+  --color-aurora-clay: #7a3d2e;
+  --color-aurora-rose: #c99085;
+  --color-aurora-sage: #7a8266;
+
   /* Fonts */
-  --font-display: "Fraunces", "ui-serif", Georgia, serif;
-  --font-sans: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Fraunces", "ui-serif", Georgia, serif;
+  --font-sans: "Geist Variable", "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
 
   /* Radii - single system: buttons pills, cards 20px, inputs 14px */
@@ -75,17 +119,32 @@
   h1,
   h2,
   h3 {
-    font-family: var(--font-display);
+    font-family: var(--font-serif);
     letter-spacing: -0.02em;
     color: var(--color-ink);
   }
 
-  /* Italic descender clearance for display headlines */
+  /* Italic descender clearance for display headlines. */
   .display-italic em,
   .display-italic i {
     font-style: italic;
     line-height: 1.1;
     padding-bottom: 0.1em;
+  }
+
+  /* Organic SVG divider - soft horizon between sections. */
+  .aurora-divider {
+    display: block;
+    width: 100%;
+    height: 28px;
+    color: var(--color-paper-3);
+    pointer-events: none;
+  }
+
+  @media (min-width: 768px) {
+    .aurora-divider {
+      height: 40px;
+    }
   }
 }
 
@@ -121,6 +180,7 @@
     white-space: nowrap;
   }
 
+  /* Tactile feedback - translate-y-px on press. */
   .btn-pill:active {
     transform: translateY(1px) scale(0.985);
   }
@@ -133,6 +193,7 @@
 
   .btn-primary:hover {
     background: var(--color-ink);
+    transform: translateY(-1px);
   }
 
   .btn-ghost {
@@ -199,12 +260,15 @@
     box-shadow: 0 0 0 4px rgba(122, 61, 46, 0.16);
   }
 
+  /* Schedule slot - default state is "available" with subtle sage accent
+   * (sage = libre, clay = seleccionado, busy = ocupado). */
   .slot {
     appearance: none;
-    border: 1px solid rgba(31, 24, 18, 0.1);
+    position: relative;
+    border: 1px solid rgba(122, 130, 102, 0.32);
     background: var(--color-paper-2);
     border-radius: var(--radius-input);
-    padding: 0.65rem 0.5rem;
+    padding: 0.875rem 0.5rem; /* 44px tap target on mobile */
     font-size: 0.875rem;
     font-variant-numeric: tabular-nums;
     color: var(--color-ink);
@@ -216,15 +280,37 @@
       color 400ms var(--ease-fluid);
   }
 
+  /* Tiny sage indicator - a discrete dot in the top-right corner for free slots. */
+  .slot::after {
+    content: "";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background: var(--color-sage);
+    opacity: 0.55;
+    transition: opacity 400ms var(--ease-fluid);
+  }
+
   .slot:hover:not(:disabled) {
     border-color: var(--color-clay);
     transform: translateY(-1px);
+  }
+
+  .slot:hover:not(:disabled)::after {
+    opacity: 0;
   }
 
   .slot-selected {
     background: var(--color-clay);
     border-color: var(--color-clay);
     color: var(--color-paper-2);
+  }
+
+  .slot-selected::after {
+    opacity: 0;
   }
 
   .slot-busy {
@@ -235,10 +321,15 @@
       rgba(31, 24, 18, 0.07) 6px,
       rgba(31, 24, 18, 0.07) 12px
     );
+    border-color: rgba(31, 24, 18, 0.08);
     color: rgba(31, 24, 18, 0.42);
     cursor: not-allowed;
     text-decoration: line-through;
     text-decoration-color: rgba(31, 24, 18, 0.32);
+  }
+
+  .slot-busy::after {
+    opacity: 0;
   }
 
   .reveal {
@@ -269,7 +360,7 @@
     }
   }
 
-  /* Subtle paper texture overlay, fixed pointer-events:none */
+  /* Subtle paper texture overlay, fixed pointer-events:none. */
   .grain::before {
     content: "";
     position: fixed;
@@ -293,3 +384,29 @@
     }
   }
 }
+
+/* Spec-required aurora-* utility names. Defined outside @layer so Tailwind v4
+ * does not tree-shake them when no markup references them yet. */
+.bg-aurora-paper { background-color: var(--color-aurora-paper); }
+.bg-aurora-paper-2 { background-color: var(--color-aurora-paper-2); }
+.bg-aurora-paper-3 { background-color: var(--color-aurora-paper-3); }
+.bg-aurora-clay { background-color: var(--color-aurora-clay); }
+.bg-aurora-rose { background-color: var(--color-aurora-rose); }
+.bg-aurora-sage { background-color: var(--color-aurora-sage); }
+.bg-aurora-ink { background-color: var(--color-aurora-ink); }
+
+.text-aurora-paper { color: var(--color-aurora-paper); }
+.text-aurora-paper-2 { color: var(--color-aurora-paper-2); }
+.text-aurora-paper-3 { color: var(--color-aurora-paper-3); }
+.text-aurora-clay { color: var(--color-aurora-clay); }
+.text-aurora-rose { color: var(--color-aurora-rose); }
+.text-aurora-sage { color: var(--color-aurora-sage); }
+.text-aurora-ink { color: var(--color-aurora-ink); }
+
+.border-aurora-paper { border-color: var(--color-aurora-paper); }
+.border-aurora-paper-2 { border-color: var(--color-aurora-paper-2); }
+.border-aurora-paper-3 { border-color: var(--color-aurora-paper-3); }
+.border-aurora-clay { border-color: var(--color-aurora-clay); }
+.border-aurora-rose { border-color: var(--color-aurora-rose); }
+.border-aurora-sage { border-color: var(--color-aurora-sage); }
+.border-aurora-ink { border-color: var(--color-aurora-ink); }

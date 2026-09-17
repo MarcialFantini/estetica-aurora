@@ -13,9 +13,6 @@ const {
   description = "Reservá tu turno en Estética Aurora, peluquería unisex. Sin llamadas, sin esperar, sin superposiciones.",
 } = Astro.props;
 
-// Fonts via Bunny Fonts (privacy-respecting Google Fonts mirror). Self-host fallback in CSS.
-const fontHref =
-  "https://fonts.bunny.net/css?family=fraunces:400,500,600,700,400-italic,500-italic|geist:300,400,500,600,700|geist-mono:400,500&display=swap";
 ---
 
 <!doctype html>
@@ -26,8 +23,7 @@ const fontHref =
     <meta name="description" content={description} />
     <meta name="theme-color" content="#f4ece1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin />
-    <link rel="stylesheet" href={fontHref} />
+    <!-- Fonts are self-hosted via @fontsource (latin subset), loaded by global.css. -->
     <title>{title}</title>
   </head>
   <body class="grain min-h-[100dvh]">

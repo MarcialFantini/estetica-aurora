@@ -61,7 +61,7 @@ function Missing({ codigo }: { codigo: string }): JSX.Element {
         <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
           Sin resultados
         </p>
-        <h1 class="display-italic mt-3 font-display text-[clamp(1.8rem,4vw,2.6rem)] leading-[1.05] text-[var(--color-ink)]">
+        <h1 class="display-italic mt-3 font-serif text-[clamp(1.8rem,4vw,2.6rem)] leading-[1.05] text-[var(--color-ink)]">
           No encontramos la reserva <em>{codigo}</em>.
         </h1>
         <p class="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-[var(--color-ink-2)]">
@@ -106,7 +106,7 @@ function Receipt({ reserva }: { reserva: Reserva }): JSX.Element {
           </p>
         </div>
 
-        <h1 class="display-italic mt-5 font-display text-[clamp(1.9rem,4.5vw,2.8rem)] leading-[1.05] text-[var(--color-ink)]">
+        <h1 class="display-italic mt-5 font-serif text-[clamp(1.9rem,4.5vw,2.8rem)] leading-[1.05] text-[var(--color-ink)]">
           Listo, <em>te esperamos</em>.
         </h1>
         <p class="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-[var(--color-ink-2)]">
