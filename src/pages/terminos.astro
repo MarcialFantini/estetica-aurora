@@ -1,0 +1,135 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import AuroraDivider from "../components/AuroraDivider.astro";
+
+const secciones = [
+  {
+    id: "introduccion",
+    titulo: "1. Introducción",
+    parrafos: [
+      "Este sitio web es una simulación de portafolio. No procesa pagos, no envía correos electrónicos y no envía mensajes SMS. Las reservas que hagas quedan guardadas únicamente en el navegador donde las hiciste.",
+      "Toda la información que aparece en este sitio (servicios, profesionales, precios, horarios) es ficticia y se proporciona con fines demostrativos.",
+    ],
+  },
+  {
+    id: "uso-del-sitio",
+    titulo: "2. Uso del sitio",
+    parrafos: [
+      "El sitio permite reservar turnos simulados para los servicios listados. Al confirmar una reserva, se genera un código único que se muestra en pantalla. Este código es decorativo: no habilita ningún servicio real.",
+      "El sitio no requiere registro. La información de contacto que ingresás (nombre, teléfono, email, notas) se almacena únicamente en el almacenamiento local de tu navegador.",
+    ],
+  },
+  {
+    id: "datos-personales",
+    titulo: "3. Datos personales",
+    parrafos: [
+      "Los datos que ingresás en el flujo de reserva (nombre, teléfono, email y notas opcionales) no salen de tu navegador. No se transmiten a ningún servidor ni a terceros.",
+      "Si limpiás los datos de tu navegador (cookies, almacenamiento local), las reservas que hiciste se eliminan junto con cualquier otro dato local.",
+    ],
+  },
+  {
+    id: "limitaciones",
+    titulo: "4. Limitaciones del servicio",
+    parrafos: [
+      "Las reservas son simuladas. No hay atención real asociada a los códigos generados. Los precios son informativos y no se procesa ningún pago.",
+      "Los horarios disponibles se calculan con la información guardada en tu navegador. Si abrís el sitio en otro navegador o dispositivo, verás la agenda vacía porque no hay sincronización entre dispositivos.",
+    ],
+  },
+  {
+    id: "propiedad-intelectual",
+    titulo: "5. Propiedad intelectual",
+    parrafos: [
+      "El código fuente de este proyecto es de libre lectura y se publica con fines educativos. Las fotografías atmosféricas provienen del servicio Picsum (Lorem Picsum) y se usan bajo sus términos de uso.",
+      "Las marcas mencionadas (Bunny Fonts, Picsum, etc.) pertenecen a sus respectivos titulares y se usan únicamente a título referencial.",
+    ],
+  },
+  {
+    id: "cambios",
+    titulo: "6. Cambios a estos términos",
+    parrafos: [
+      "Estos términos pueden actualizarse sin previo aviso. Te recomendamos revisarlos periódicamente. La fecha de la última actualización figura al pie de esta página.",
+    ],
+  },
+  {
+    id: "contacto",
+    titulo: "7. Contacto",
+    parrafos: [
+      "Para preguntas sobre el proyecto, podés escribir a la dirección de email listada en la página de Contacto. Si el sitio lo hospeda tu propio servidor, esa misma dirección es la del equipo de desarrollo.",
+    ],
+  },
+];
+
+const ultimaActualizacion = "Septiembre 2026";
+---
+
+<Base
+  title="Términos y condiciones - Estética Aurora"
+  description="Términos de uso de la simulación de Estética Aurora. Reservas ficticias, sin backend."
+  active="terminos"
+>
+  <Header slot="header" active="terminos" />
+
+  <section class="container-x pt-28 sm:pt-36">
+    <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+      Términos
+    </p>
+    <h1 class="display-italic mt-3 max-w-[18ch] font-serif text-[clamp(2.2rem,6vw,4.4rem)] leading-[1.04] text-[var(--color-ink)]">
+      Términos y <em>condiciones</em>.
+    </h1>
+    <p class="mt-6 max-w-[60ch] text-[16px] leading-relaxed text-[var(--color-ink-2)]">
+      Leé estos términos antes de usar el sitio. Son cortos y están escritos en
+      castellano claro: si algo no se entiende, escribinos.
+    </p>
+  </section>
+
+  <AuroraDivider />
+
+  <section class="container-x mt-12">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-14">
+      <aside class="reveal lg:col-span-4">
+        <div class="lg:sticky lg:top-32">
+          <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+            Contenido
+          </p>
+          <ol class="mt-4 flex flex-col gap-1.5 text-[14px]">
+            {
+              secciones.map((s) => (
+                <li>
+                  <a
+                    href={`#${s.id}`}
+                    class="block rounded-[var(--radius-input)] px-3 py-2 text-[var(--color-ink-2)] transition-colors hover:bg-[rgba(31,24,18,0.04)] hover:text-[var(--color-ink)]"
+                  >
+                    {s.titulo}
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+          <p class="mt-6 text-[12px] text-[var(--color-muted)]">
+            Última actualización: {ultimaActualizacion}
+          </p>
+        </div>
+      </aside>
+      <article class="reveal lg:col-span-8">
+        {
+          secciones.map((s) => (
+            <section id={s.id} class="scroll-mt-32 border-t border-[rgba(31,24,18,0.08)] py-8 first:border-t-0 first:pt-0">
+              <h2 class="font-serif text-[24px] leading-[1.15] text-[var(--color-ink)]">
+                {s.titulo}
+              </h2>
+              <div class="mt-4 grid gap-4 text-[15px] leading-relaxed text-[var(--color-ink-2)]">
+                {s.parrafos.map((p) => (
+                  <p>{p}</p>
+                ))}
+              </div>
+            </section>
+          ))
+        }
+      </article>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

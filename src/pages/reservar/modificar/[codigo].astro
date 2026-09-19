@@ -1,0 +1,30 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Header from "../../../components/Header.astro";
+import Footer from "../../../components/Footer.astro";
+import ModifyBookingIsland from "../../../components/booking/ModifyBookingIsland";
+
+export const prerender = false;
+
+const { codigo } = Astro.params;
+
+if (!codigo || typeof codigo !== "string") {
+  return Astro.redirect("/reservar");
+}
+---
+
+<Base
+  title={`Modificar reserva ${codigo} - Estética Aurora`}
+  description="Cambiá fecha, hora o servicios de tu reserva."
+  active="reservar"
+>
+  <Header slot="header" active="reservar" />
+
+  <section class="container-x pt-28 sm:pt-36">
+    <div class="mx-auto max-w-3xl">
+      <ModifyBookingIsland codigo={codigo} client:load />
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

@@ -1,0 +1,30 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Header from "../../../components/Header.astro";
+import Footer from "../../../components/Footer.astro";
+import CancelBookingFlow from "../../../components/booking/CancelBookingFlow";
+
+export const prerender = false;
+
+const { codigo } = Astro.params;
+
+if (!codigo || typeof codigo !== "string") {
+  return Astro.redirect("/reservar");
+}
+---
+
+<Base
+  title={`Cancelar reserva ${codigo} - Estética Aurora`}
+  description="Cancelá tu reserva y dejá el motivo para que podamos mejorar."
+  active="reservar"
+>
+  <Header slot="header" active="reservar" />
+
+  <section class="container-x pt-28 sm:pt-36">
+    <div class="mx-auto max-w-2xl">
+      <CancelBookingFlow codigo={codigo} client:load />
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

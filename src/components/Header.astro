@@ -1,13 +1,24 @@
 ---
 interface Props {
-  active?: "inicio" | "reservar";
+  active?:
+    | "inicio"
+    | "reservar"
+    | "sobre-nosotras"
+    | "equipo"
+    | "contacto"
+    | "historial"
+    | "terminos"
+    | "politica-cancelacion"
+    | "admin";
 }
 
 const { active = "inicio" } = Astro.props;
 
-const links: { href: string; label: string; id: "inicio" | "reservar" }[] = [
+const links: { href: string; label: string; id: Props["active"] }[] = [
   { href: "/", label: "Inicio", id: "inicio" },
   { href: "/#servicios", label: "Servicios", id: "inicio" },
+  { href: "/sobre-nosotras", label: "Sobre nosotras", id: "sobre-nosotras" },
+  { href: "/contacto", label: "Contacto", id: "contacto" },
   { href: "/reservar", label: "Reservar", id: "reservar" },
 ];
 ---

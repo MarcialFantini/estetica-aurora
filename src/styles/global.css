@@ -116,6 +116,34 @@
     color: var(--color-paper-2);
   }
 
+  /* Global focus-visible: a11y baseline for keyboard users.
+   * Per-element classes can override via :focus-visible selectors below. */
+  :focus-visible {
+    outline: 2px solid var(--color-clay);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Skip-link: hidden until focused via keyboard. Off-screen at rest so it
+   * doesn't take layout space, slides in from the top-left on focus. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    background: var(--color-clay);
+    color: var(--color-paper-2);
+    padding: 0.75rem 1rem;
+    border-radius: 0 0 var(--radius-input, 0.5rem) 0;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .skip-link:focus {
+    left: 0;
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
   h1,
   h2,
   h3 {
@@ -183,6 +211,11 @@
   /* Tactile feedback - translate-y-px on press. */
   .btn-pill:active {
     transform: translateY(1px) scale(0.985);
+  }
+
+  .btn-pill:focus-visible,
+  .btn-primary:focus-visible {
+    outline-offset: 4px;
   }
 
   .btn-primary {

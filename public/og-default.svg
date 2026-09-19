@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Estética Aurora — Reservas online">
+  <!-- Background: warm paper tone -->
+  <rect width="1200" height="630" fill="#f4ece1" />
+
+  <!-- Subtle organic horizon divider (decorative, low-contrast) -->
+  <path d="M0 480 C 300 440 600 500 900 470 C 1050 455 1140 480 1200 470 L 1200 630 L 0 630 Z"
+        fill="#ecdfcb" opacity="0.55" />
+
+  <!-- Eyebrow / mono label -->
+  <text x="80" y="130" font-family="ui-monospace, 'Geist Mono', 'JetBrains Mono', monospace"
+        font-size="20" font-weight="500" fill="#8a7a6b" letter-spacing="6">
+    PELUQUERÍA UNISEX · CENTRO CABA
+  </text>
+
+  <!-- Headline (display serif) -->
+  <text x="80" y="270" font-family="ui-serif, 'Fraunces', Georgia, serif"
+        font-size="96" font-weight="400" fill="#1f1812" letter-spacing="-2">
+    Estética Aurora
+  </text>
+
+  <!-- Italic accent (display-italic pattern from the project) -->
+  <text x="80" y="370" font-family="ui-serif, 'Fraunces', Georgia, serif"
+        font-style="italic" font-size="64" font-weight="400" fill="#7a3d2e" letter-spacing="-1">
+    Reservas online
+  </text>
+
+  <!-- Subheadline / description -->
+  <text x="80" y="455" font-family="ui-sans-serif, 'Geist', system-ui, sans-serif"
+        font-size="26" font-weight="400" fill="#4a3e35">
+    Cinco pasos. Sin llamadas. Sin superposiciones.
+  </text>
+
+  <!-- Bottom-right brand mark: monogram in clay circle -->
+  <circle cx="1100" cy="540" r="50" fill="#7a3d2e" />
+  <text x="1100" y="555" text-anchor="middle"
+        font-family="ui-serif, 'Fraunces', Georgia, serif"
+        font-size="44" font-weight="500" fill="#faf4ea">
+    EA
+  </text>
+
+  <!-- Tiny URL tag bottom-left -->
+  <text x="80" y="575" font-family="ui-monospace, 'Geist Mono', monospace"
+        font-size="14" font-weight="500" fill="#8a7a6b" letter-spacing="2">
+    ESTETICA-AURORA.EXAMPLE.COM
+  </text>
+</svg>

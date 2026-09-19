@@ -5,13 +5,61 @@ interface Props {
   title?: string;
   description?: string;
   /** Path to active route, used by the nav to mark current page. */
-  active?: "inicio" | "reservar";
+  active?:
+    | "inicio"
+    | "reservar"
+    | "sobre-nosotras"
+    | "contacto"
+    | "historial"
+    | "terminos"
+    | "politica-cancelacion"
+    | "admin";
 }
 
 const {
   title = "Estética Aurora - Reservas online",
   description = "Reservá tu turno en Estética Aurora, peluquería unisex. Sin llamadas, sin esperar, sin superposiciones.",
 } = Astro.props;
+
+// Canonical URL — derive from Astro.site when configured, fall back to request URL.
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+
+// JSON-LD for search engines. Mirrors the data in Footer.astro so the two
+// sources of truth don't drift. Update BOTH if address/hours change.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BeautySalon",
+  "@id": "https://estetica-aurora.example.com/#business",
+  name: "Estética Aurora",
+  description,
+  url: "https://estetica-aurora.example.com/",
+  image: "/og-default.svg",
+  telephone: "+54-9-11-4555-1234",
+  email: "reservas@aurora.local",
+  priceRange: "$$",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Av. de los Aromos 1420",
+    addressLocality: "Centro",
+    addressRegion: "CABA",
+    postalCode: "C1000",
+    addressCountry: "AR",
+  },
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "09:00",
+      closes: "19:00",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: "Saturday",
+      opens: "09:00",
+      closes: "21:00",
+    },
+  ],
+};
 
 ---
 
@@ -23,10 +71,31 @@ const {
     <meta name="description" content={description} />
     <meta name="theme-color" content="#f4ece1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Estética Aurora" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content="/og-default.svg" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="/og-default.svg" />
+
     <!-- Fonts are self-hosted via @fontsource (latin subset), loaded by global.css. -->
     <title>{title}</title>
+
+    <!-- LocalBusiness structured data. -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body class="grain min-h-[100dvh]">
+    <a class="skip-link" href="#main">Saltar al contenido principal</a>
     <slot name="header" />
     <main id="main">
         <slot />

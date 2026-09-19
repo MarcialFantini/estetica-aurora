@@ -1,0 +1,152 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import AuroraDivider from "../components/AuroraDivider.astro";
+
+const puntos = [
+  {
+    id: "ventana",
+    titulo: "Cancelación sin cargo",
+    cuerpo: "Podés cancelar o modificar tu reserva sin cargo hasta 24 horas antes del turno.",
+  },
+  {
+    id: "tarde",
+    titulo: "Cancelación con aviso",
+    cuerpo: "Cancelaciones dentro de las 24 horas previas al turno están sujetas a un cargo del 30% del servicio.",
+  },
+  {
+    id: "no-show",
+    titulo: "Inasistencia (no-show)",
+    cuerpo: "Si no te presentás al turno sin avisar, se cobra el 50% del servicio reservado para cubrir el costo del horario reservado.",
+  },
+  {
+    id: "llegar-tarde",
+    titulo: "Llegar tarde",
+    cuerpo: "Si llegás más de 15 minutos tarde, el servicio puede acortarse o reprogramarse según disponibilidad. No se reintegra lo pagado.",
+  },
+  {
+    id: "modificar",
+    titulo: "Modificar tu reserva",
+    cuerpo: "Podés cambiar fecha, hora o profesional desde la página de modificación con tu código, hasta 2 horas antes del turno.",
+  },
+  {
+    id: "fuerza-mayor",
+    titulo: "Casos de fuerza mayor",
+    cuerpo: "Enfermedad, accidente o emergencia familiar: avisanos por teléfono y reprogramamos sin cargo aunque sea dentro de las 24 horas.",
+  },
+];
+---
+
+<Base
+  title="Política de cancelación - Estética Aurora"
+  description="Cómo cancelar, modificar o reprogramar tu reserva en Estética Aurora. Plazos y cargos."
+  active="politica-cancelacion"
+>
+  <Header slot="header" active="politica-cancelacion" />
+
+  <section class="container-x pt-28 sm:pt-36">
+    <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+      Política de cancelación
+    </p>
+    <h1 class="display-italic mt-3 max-w-[20ch] font-serif text-[clamp(2.2rem,6vw,4.4rem)] leading-[1.04] text-[var(--color-ink)]">
+      Cambiar de <em>planes</em> pasa. Te lo hacemos fácil.
+    </h1>
+    <p class="mt-6 max-w-[60ch] text-[16px] leading-relaxed text-[var(--color-ink-2)]">
+      Sabemos que surgen imprevistos. Acá explicamos cómo cancelar o modificar tu
+      reserva, qué ventanas tienen cargo y cuándo no se cobra nada.
+    </p>
+  </section>
+
+  <AuroraDivider />
+
+  <section class="container-x mt-12">
+    <div class="grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-[rgba(31,24,18,0.08)] bg-[rgba(31,24,18,0.08)] sm:grid-cols-2">
+      {
+        puntos.map((p, i) => (
+          <article
+            id={p.id}
+            class="scroll-mt-32 p-7"
+            style="background: var(--color-paper-2);"
+          >
+            <span class="font-mono text-[11px] tabular-nums text-[var(--color-clay)]">
+              0{i + 1}
+            </span>
+            <h2 class="mt-3 font-serif text-[22px] leading-[1.15] text-[var(--color-ink)]">
+              {p.titulo}
+            </h2>
+            <p class="mt-3 text-[14px] leading-relaxed text-[var(--color-ink-2)]">
+              {p.cuerpo}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <AuroraDivider />
+
+  <section class="container-x mt-12 mb-32">
+    <div class="bezel-shell">
+      <div
+        class="bezel-core flex flex-col gap-6 p-8 sm:p-12"
+        style="background: var(--color-paper-3);"
+      >
+        <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+          ¿Cómo cancelo?
+        </p>
+        <h2 class="font-serif text-[clamp(1.6rem,3.5vw,2.4rem)] leading-[1.1] text-[var(--color-ink)]">
+          Tenés tres formas, todas sin llamar a la peluquería.
+        </h2>
+        <ol class="grid gap-4 text-[14.5px] leading-relaxed text-[var(--color-ink-2)] sm:grid-cols-3">
+          <li class="rounded-[var(--radius-input)] border border-[rgba(31,24,18,0.08)] p-5">
+            <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
+              Opción 1
+            </p>
+            <p class="mt-2 font-medium text-[var(--color-ink)]">
+              Desde el comprobante
+            </p>
+            <p class="mt-2">
+              Abrí la página de tu reserva con el código AUR-XXXXXX y usá el botón
+              "Cancelar reserva".
+            </p>
+          </li>
+          <li class="rounded-[var(--radius-input)] border border-[rgba(31,24,18,0.08)] p-5">
+            <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
+              Opción 2
+            </p>
+            <p class="mt-2 font-medium text-[var(--color-ink)]">
+              Desde Mis reservas
+            </p>
+            <p class="mt-2">
+              Buscá por tu número de teléfono en /historial y elegí la reserva a
+              cancelar.
+            </p>
+          </li>
+          <li class="rounded-[var(--radius-input)] border border-[rgba(31,24,18,0.08)] p-5">
+            <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
+              Opción 3
+            </p>
+            <p class="mt-2 font-medium text-[var(--color-ink)]">
+              Por WhatsApp
+            </p>
+            <p class="mt-2">
+              Si te resulta más cómodo, mandanos el código por WhatsApp y lo
+              cancelamos nosotros.
+            </p>
+          </li>
+        </ol>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a href="/historial" class="btn-pill btn-primary">
+            <span>Buscar mis reservas</span>
+          </a>
+          <a href="/contacto" class="btn-pill btn-ghost">
+            <span>Ver datos de contacto</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

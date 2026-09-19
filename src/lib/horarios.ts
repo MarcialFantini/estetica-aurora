@@ -1,10 +1,77 @@
 // Utilities for formatting, date math and slot generation.
 // All timezone-agnostic. Uses the user's local browser date for "today".
 
-export const HORARIO_INICIO = 9; // 09:00
-export const HORARIO_FIN = 19; // 19:00 inclusive as last start
+/** Weekday index 1..7 → opening hour (24h). 0 means closed. */
+export const HORARIO_INICIO_POR_DIA: Record<number, number> = {
+  1: 9, // Lunes
+  2: 9, // Martes
+  3: 9, // Miércoles
+  4: 9, // Jueves
+  5: 9, // Viernes
+  6: 9, // Sábado
+  7: 0, // Domingo cerrado
+};
+
+/** Weekday index 1..7 → last slot-start hour (24h, inclusive). */
+export const HORARIO_FIN_POR_DIA: Record<number, number> = {
+  1: 19,
+  2: 19,
+  3: 19,
+  4: 19,
+  5: 19,
+  6: 21, // Sábados: horario extendido hasta 21:00
+  7: 0,
+};
+
+/** Default schedule (fallback when weekday lookup fails). */
+export const HORARIO_INICIO = 9;
+export const HORARIO_FIN = 19;
 export const HORARIO_INICIO_STR = "09:00";
 export const HORARIO_FIN_STR = "19:00";
+
+/** Last possible service-end hour. Used to filter slots that would overrun closing. */
+export const CIERRE_HARD_CAP_POR_DIA: Record<number, number> = {
+  1: 20,
+  2: 20,
+  3: 20,
+  4: 20,
+  5: 20,
+  6: 22, // Sábados podemos arrancar un servicio hasta 21:00
+  7: 0,
+};
+
+/** Returns true when the salon is open on this weekday (1=Mon, 7=Sun). */
+export const esDiaAbierto = (wd: number): boolean =>
+  (HORARIO_INICIO_POR_DIA[wd] ?? 0) > 0;
+
+/** Closing hour for a date — takes Saturday extension into account. */
+export const horaCierreParaFecha = (iso: string): number => {
+  const d = fromIsoDate(iso);
+  const wd = isoWeekday(d);
+  return HORARIO_FIN_POR_DIA[wd] ?? HORARIO_FIN;
+};
+
+/** Opening hour for a date. */
+export const horaAperturaParaFecha = (iso: string): number => {
+  const d = fromIsoDate(iso);
+  const wd = isoWeekday(d);
+  return HORARIO_INICIO_POR_DIA[wd] ?? HORARIO_INICIO;
+};
+
+/** Hard cap for service-end time on the given date (used by slot filter). */
+export const capServicioParaFecha = (iso: string): string => {
+  const d = fromIsoDate(iso);
+  const wd = isoWeekday(d);
+  const cap = CIERRE_HARD_CAP_POR_DIA[wd] ?? 20;
+  return `${cap.toString().padStart(2, "0")}:00`;
+};
+
+/** Returns true if the ISO date is a working day for the salon. */
+export const esFechaLaborable = (iso: string): boolean => {
+  const d = fromIsoDate(iso);
+  const wd = isoWeekday(d);
+  return esDiaAbierto(wd);
+};
 
 export const DIAS_SEMANA = [
   "Lunes",
@@ -45,6 +112,18 @@ export const generarSlots = (
     out.push(`${hh}:${mm}`);
   }
   return out;
+};
+
+/**
+ * Build the day's slot list taking into account per-day opening hours.
+ * Slots whose service would not fit before the hard cap are dropped by the
+ * caller (the booking island filters with addMinutes + capServicioParaFecha).
+ */
+export const slotsDelDia = (iso: string): string[] => {
+  const inicio = horaAperturaParaFecha(iso);
+  const fin = horaCierreParaFecha(iso);
+  if (inicio === 0 || fin === 0) return [];
+  return generarSlots(inicio, fin, 30);
 };
 
 /** Pad to ISO weekday: JS Sunday=0 → 7. */

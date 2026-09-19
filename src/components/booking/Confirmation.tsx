@@ -20,6 +20,8 @@ import { type Rating, ratingPorReserva } from "../../lib/ratings";
 import { RatingStarsDisplay } from "./RatingStars";
 import RatingSection from "./RatingSection";
 import RescheduleFlow from "./RescheduleFlow";
+import { descargarICS } from "../../lib/ics";
+import { qrSvg } from "../../lib/qr";
 
 interface Props {
   codigo: string;
@@ -32,10 +34,8 @@ type State =
 
 type Mode = "view" | "reschedule" | "confirm-cancel" | "cancelled";
 
-const RESCHEDULE_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2 hours
+const RESCHEDULE_THRESHOLD_MS = 2 * 60 * 60 * 1000;
 
-/** Returns milliseconds until the appointment, or null if the time has
- *  already passed. */
 const msHastaTurno = (reserva: Reserva): number => {
   const [hh, mm] = reserva.hora.split(":").map(Number);
   const fecha = fromIsoDate(reserva.fecha);
@@ -182,7 +182,11 @@ function Receipt({
   onModeChange,
   onRefresh,
 }: ReceiptProps): JSX.Element {
-  const servicio = servicioPorId(reserva.servicioId);
+  const servicioPrincipal = servicioPorId(reserva.servicioId);
+  const serviciosSecundarios = (reserva.servicioIds ?? [])
+    .slice(1)
+    .map((id) => servicioPorId(id))
+    .filter((s): s is NonNullable<ReturnType<typeof servicioPorId>> => Boolean(s));
   const profesional = profesionalPorId(reserva.profesionalId);
   const profesionalLabel =
     reserva.profesionalId === "cualquiera"
@@ -190,8 +194,6 @@ function Receipt({
       : profesional?.nombre ?? reserva.profesionalId;
 
   const [completada, setCompletada] = useState<boolean>(initialCompletada);
-  // Sync local completion state with the upstream prop (it changes after
-  // refreshTick bumps when we mutate the storage).
   useEffect(() => {
     setCompletada(initialCompletada);
   }, [initialCompletada]);
@@ -199,9 +201,13 @@ function Receipt({
   const ms = msHastaTurno(reserva);
   const turnoEnPasado = ms <= 0;
   const turnoCercano = ms > 0 && ms < RESCHEDULE_THRESHOLD_MS;
-  // Reagendar is allowed only when the appointment is comfortably in the
-  // future (>2h ahead). Past or imminent turns can't be moved.
   const puedeReagendar = !turnoEnPasado && !turnoCercano;
+  const cancelada = Boolean(reserva.cancelada);
+
+  const duracionTotal = reserva.duracionTotalMin || reserva.duracionMin;
+  const precioTotal = [servicioPrincipal, ...serviciosSecundarios]
+    .filter(Boolean)
+    .reduce((acc, s) => acc + (s?.precio ?? 0), 0);
 
   const handleMarcarCompletada = () => {
     marcarCompletada(reserva.codigo);
@@ -219,21 +225,30 @@ function Receipt({
 
   const handleRescheduleConfirm = (_updated: Reserva) => {
     onModeChange("view");
-    // Notify parent so it re-reads localStorage.
     onRefresh();
   };
 
+  const handlePrint = () => {
+    if (typeof window !== "undefined") window.print();
+  };
+
+  const icsPayload = `AURORA-${reserva.codigo}`;
+  const qrSvgString = qrSvg(icsPayload, { size: 160, margin: 2 });
+
   return (
-    <div class="bezel-shell">
+    <div class="receipt-root bezel-shell">
+      <style>{PRINT_STYLES}</style>
       <div
-        class="bezel-core overflow-hidden p-6 sm:p-10"
+        class="bezel-core receipt-sheet overflow-hidden p-6 sm:p-10"
         style="background: var(--color-paper-2);"
       >
         <div class="flex flex-wrap items-center gap-3">
           <span
             class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-medium"
             style={
-              completada
+              cancelada
+                ? "background: rgba(31,24,18,0.1); color: var(--color-ink-2);"
+                : completada
                 ? "background: rgba(122,130,102,0.18); color: #4d5534;"
                 : "background: rgba(122,61,46,0.12); color: var(--color-clay);"
             }
@@ -242,18 +257,39 @@ function Receipt({
               aria-hidden="true"
               class="inline-block h-1.5 w-1.5 rounded-full"
               style={{
-                background: completada ? "#4d5534" : "var(--color-clay)",
+                background: cancelada
+                  ? "var(--color-muted)"
+                  : completada
+                  ? "#4d5534"
+                  : "var(--color-clay)",
               }}
             />
-            {completada ? "Completada" : "Reserva confirmada"}
+            {cancelada ? "Cancelada" : completada ? "Completada" : "Reserva confirmada"}
           </span>
           <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-muted)]">
             Comprobante
           </p>
+          <span class="ml-auto print:hidden">
+            <button
+              type="button"
+              class="btn-pill btn-ghost !py-2 !px-4 text-[13px]"
+              onClick={handlePrint}
+              title="Imprimir comprobante"
+            >
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 6V2h8v4M4 12H2v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4h-2M4 10h8v4H4v-4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+              </svg>
+              <span>Imprimir</span>
+            </button>
+          </span>
         </div>
 
         <h1 class="display-italic mt-5 font-serif text-[clamp(1.9rem,4.5vw,2.8rem)] leading-[1.05] text-[var(--color-ink)]">
-          {completada ? (
+          {cancelada ? (
+            <>
+              Tu reserva <em>fue cancelada</em>.
+            </>
+          ) : completada ? (
             <>
               Gracias, <em>nos vemos pronto</em>.
             </>
@@ -264,28 +300,51 @@ function Receipt({
           )}
         </h1>
         <p class="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-[var(--color-ink-2)]">
-          {completada
+          {cancelada
+            ? "Liberamos tu horario. Si querés, podés sacar un turno nuevo cuando quieras."
+            : completada
             ? "Tu reseña nos ayuda a mejorar. Si querés, dejános tu calificación."
             : "Guardá tu código. Si necesitás reprogramar, usá los botones de abajo."}
         </p>
 
-        <div
-          class="mt-8 inline-flex flex-col rounded-[var(--radius-card)] border border-dashed px-6 py-5"
-          style="border-color: rgba(122,61,46,0.4); background: var(--color-paper-3);"
-        >
-          <span class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
-            Tu código
-          </span>
-          <span
-            class="mt-2 font-mono text-[28px] font-medium tabular-nums tracking-[0.06em] text-[var(--color-clay)] sm:text-[34px]"
-            aria-label={`Código de reserva ${reserva.codigo}`}
+        <div class="mt-8 flex flex-wrap items-stretch gap-4">
+          <div
+            class="inline-flex flex-1 min-w-[260px] flex-col rounded-[var(--radius-card)] border border-dashed px-6 py-5"
+            style="border-color: rgba(122,61,46,0.4); background: var(--color-paper-3);"
           >
-            {reserva.codigo}
-          </span>
+            <span class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+              Tu código
+            </span>
+            <span
+              class="mt-2 font-mono text-[28px] font-medium tabular-nums tracking-[0.06em] text-[var(--color-clay)] sm:text-[34px]"
+              aria-label={`Código de reserva ${reserva.codigo}`}
+            >
+              {reserva.codigo}
+            </span>
+          </div>
+          <div
+            class="flex flex-col items-center justify-center rounded-[var(--radius-card)] border border-[rgba(31,24,18,0.12)] p-3"
+            style="background: var(--color-paper-3);"
+            aria-label="Código QR del comprobante"
+            dangerouslySetInnerHTML={{ __html: qrSvgString }}
+          />
         </div>
 
         <dl class="mt-10 grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-[rgba(31,24,18,0.08)] bg-[rgba(31,24,18,0.08)] sm:grid-cols-2">
-          <Detail label="Servicio" value={servicio?.nombre ?? reserva.servicioId} />
+          <Detail
+            label="Servicios"
+            value={
+              <span class="block">
+                {servicioPrincipal?.nombre ?? reserva.servicioId}
+                {serviciosSecundarios.length > 0 && (
+                  <>
+                    {" + "}
+                    {serviciosSecundarios.map((s) => s.nombre).join(" + ")}
+                  </>
+                )}
+              </span>
+            }
+          />
           <Detail label="Profesional" value={profesionalLabel} />
           <Detail
             label="Fecha"
@@ -294,12 +353,12 @@ function Receipt({
           <Detail
             label="Hora"
             value={`${formatHora(reserva.hora)} - ${formatHora(
-              addMinutes(reserva.hora, reserva.duracionMin),
+              addMinutes(reserva.hora, duracionTotal),
             )}`}
           />
           <Detail
-            label="Duración"
-            value={`${reserva.duracionMin} minutos`}
+            label="Duración total"
+            value={`${duracionTotal} minutos`}
           />
           <Detail
             label="Cliente"
@@ -315,10 +374,10 @@ function Receipt({
               </span>
             }
           />
-          {servicio && (
+          {precioTotal > 0 && (
             <Detail
               label="Precio"
-              value={formatPrecio(servicio.precio)}
+              value={formatPrecio(precioTotal)}
               className="sm:col-span-2"
             />
           )}
@@ -329,13 +388,60 @@ function Receipt({
               className="sm:col-span-2"
             />
           )}
+          {cancelada && reserva.cancelada && (
+            <Detail
+              label="Cancelada"
+              value={
+                <span class="block">
+                  <span>{reserva.cancelada.motivo}</span>
+                  {reserva.cancelada.nota && (
+                    <>
+                      <br />
+                      <span class="text-[var(--color-ink-2)]">“{reserva.cancelada.nota}”</span>
+                    </>
+                  )}
+                </span>
+              }
+              className="sm:col-span-2"
+            />
+          )}
         </dl>
 
-        {/* ── Actions: reschedule / cancel ───────────────────────────── */}
-        {!completada && mode === "view" && (
-          <div class="mt-10">
+        <div class="mt-8 flex flex-wrap gap-3 print:hidden">
+          <button
+            type="button"
+            class="btn-pill btn-ghost"
+            onClick={() => descargarICS(reserva)}
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4" />
+              <path d="M2 6h12M5 1.5v3M11 1.5v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+            <span>Agregar a calendario (.ics)</span>
+          </button>
+          <a
+            class="btn-pill btn-ghost"
+            href={`/reservar/modificar/${reserva.codigo}`}
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+            </svg>
+            <span>Modificar reserva</span>
+          </a>
+          <a
+            class="btn-pill"
+            href={`/reservar/cancelar/${reserva.codigo}`}
+            style="background: transparent; color: var(--color-clay); border: 1px solid rgba(122,61,46,0.32);"
+          >
+            <span>Cancelar reserva</span>
+          </a>
+        </div>
+
+        {/* ── Actions: inline reschedule / inline cancel ─────────────── */}
+        {!completada && !cancelada && mode === "view" && (
+          <div class="mt-10 print:hidden">
             <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
-              Cambios
+              Cambios rápidos
             </p>
             <div class="mt-3 flex flex-wrap gap-3">
               <button
@@ -350,7 +456,7 @@ function Receipt({
                 }
                 style={!puedeReagendar ? { opacity: 0.5 } : undefined}
               >
-                <span>Reagendar</span>
+                <span>Reagendar acá</span>
               </button>
               <button
                 type="button"
@@ -358,7 +464,7 @@ function Receipt({
                 onClick={() => onModeChange("confirm-cancel")}
                 style="background: transparent; color: var(--color-clay); border: 1px solid rgba(122,61,46,0.32);"
               >
-                <span>Cancelar reserva</span>
+                <span>Cancelar acá</span>
               </button>
             </div>
             {!puedeReagendar && (
@@ -371,11 +477,11 @@ function Receipt({
           </div>
         )}
 
-        {mode === "reschedule" && servicio && (
-          <div class="mt-8">
+        {mode === "reschedule" && servicioPrincipal && (
+          <div class="mt-8 print:hidden">
             <RescheduleFlow
               reserva={reserva}
-              servicio={servicio}
+              servicio={servicioPrincipal}
               onConfirm={handleRescheduleConfirm}
               onCancel={() => onModeChange("view")}
             />
@@ -383,7 +489,7 @@ function Receipt({
         )}
 
         {mode === "confirm-cancel" && (
-          <div class="mt-8 rounded-[var(--radius-input)] border border-[rgba(122,61,46,0.32)] bg-[rgba(122,61,46,0.06)] p-5">
+          <div class="mt-8 rounded-[var(--radius-input)] border border-[rgba(122,61,46,0.32)] bg-[rgba(122,61,46,0.06)] p-5 print:hidden">
             <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-clay)]">
               Confirmar cancelación
             </p>
@@ -410,13 +516,19 @@ function Receipt({
               >
                 <span>Volver</span>
               </button>
+              <a
+                href={`/reservar/cancelar/${reserva.codigo}`}
+                class="btn-pill btn-ghost text-[13px]"
+              >
+                <span>Cancelar con motivo</span>
+              </a>
             </div>
           </div>
         )}
 
         {/* ── Completion / rating ────────────────────────────────────── */}
-        <div class="mt-10">
-          {!completada && turnoEnPasado && (
+        <div class="mt-10 print:hidden">
+          {!completada && turnoEnPasado && !cancelada && (
             <div class="rounded-[var(--radius-input)] border border-[rgba(31,24,18,0.08)] bg-[var(--color-paper-3)] p-5">
               <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
                 ¿Cómo te fue?
@@ -436,7 +548,7 @@ function Receipt({
             </div>
           )}
 
-          {completada && (
+          {completada && profesional && (
             <div>
               <div class="mb-4 flex items-baseline justify-between gap-3">
                 <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
@@ -451,15 +563,13 @@ function Receipt({
                   Deshacer completado
                 </button>
               </div>
-              {servicio && profesional && (
-                <RatingSection
-                  reservaId={reserva.codigo}
-                  estilistaId={profesional.id}
-                  estilistaNombre={profesional.nombre}
-                  initialExisting={existingRating}
-                  onChange={onRefresh}
-                />
-              )}
+              <RatingSection
+                reservaId={reserva.codigo}
+                estilistaId={profesional.id}
+                estilistaNombre={profesional.nombre}
+                initialExisting={existingRating}
+                onChange={onRefresh}
+              />
               {profesional && existingRating && (
                 <div class="mt-3 text-[12px] text-[var(--color-muted)]">
                   Esta reseña alimenta el promedio de{" "}
@@ -478,22 +588,39 @@ function Receipt({
           )}
         </div>
 
-        <div class="mt-10 flex flex-wrap gap-3 border-t border-[rgba(31,24,18,0.08)] pt-8">
+        <div class="mt-10 flex flex-wrap gap-3 border-t border-[rgba(31,24,18,0.08)] pt-8 print:hidden">
           <a href="/" class="btn-pill btn-primary">
             <span>Volver al inicio</span>
           </a>
           <a href="/reservar" class="btn-pill btn-ghost">
             <span>Hacer otra reserva</span>
           </a>
+          <a href="/historial" class="btn-pill btn-ghost text-[13px]">
+            <span>Ver mis reservas</span>
+          </a>
         </div>
 
-        <p class="mt-8 text-[12px] text-[var(--color-muted)]">
+        <p class="mt-8 text-[12px] text-[var(--color-muted)] print:hidden">
           Esta reserva está guardada en tu navegador. Si lo limpiás, se pierde.
         </p>
       </div>
     </div>
   );
 }
+
+const PRINT_STYLES = `
+@media print {
+  body { background: #fff !important; }
+  body::before, body::after, .grain::before { display: none !important; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  header, footer, nav, .print\\:hidden { display: none !important; }
+  main { padding-top: 0 !important; }
+  .receet-sheet, .receipt-root .bezel-core { box-shadow: none !important; background: #fff !important; border: 1px solid rgba(31,24,18,0.4) !important; }
+  .bezel-shell { box-shadow: none !important; background: #fff !important; border: 0 !important; padding: 0 !important; }
+  .container-x { padding: 0 !important; max-width: 100% !important; }
+  a { color: inherit !important; text-decoration: none !important; }
+}
+`;
 
 function Detail({
   label,

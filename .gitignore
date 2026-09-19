@@ -27,10 +27,12 @@ Thumbs.db
 # Vite cache
 .vite/
 
+# Deployment artifacts
+.vercel/
+.netlify/
+
 # pnpm store (defensivo)
 .pnpm-store/
 
 # Project-specific: lead capture data (PII simulada, no debe commitearse)
 data/leads.json
-
-.vercel

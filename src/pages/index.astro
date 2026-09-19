@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import AuroraDivider from "../components/AuroraDivider.astro";
 import { servicios, profesionalDelMes } from "../data/servicios";
 import { HORARIO_INICIO_STR, HORARIO_FIN_STR, formatPrecio } from "../lib/horarios";
 
@@ -13,9 +14,6 @@ const PROFESIONAL_IMAGE =
   "https://picsum.photos/seed/aurora-peluqueria-equipo/1200/900";
 const INTERIOR_IMAGE =
   "https://picsum.photos/seed/aurora-peluqueria-interior/1200/900";
-
-// Organic SVG horizon divider - soft asymmetric curve, not a hard rectangle.
-const DIVIDER_SVG = `<svg viewBox="0 0 1200 40" preserveAspectRatio="none" fill="currentColor" aria-hidden="true"><path d="M0 26 C 240 8 480 38 720 22 C 920 8 1080 30 1200 18 L 1200 40 L 0 40 Z"/></svg>`;
 ---
 
 <Base title="Estética Aurora - Reservá tu turno online" active="inicio">
@@ -51,7 +49,7 @@ const DIVIDER_SVG = `<svg viewBox="0 0 1200 40" preserveAspectRatio="none" fill=
         <ul class="mt-12 grid grid-cols-3 gap-6 border-t border-[rgba(31,24,18,0.12)] pt-6 text-[13px] text-[var(--color-ink-2)]">
           <li>
             <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
-              Lunes a sábado
+              Lun a vie
             </p>
             <p class="mt-1 font-serif text-[16px] text-[var(--color-ink)]">
               {HORARIO_INICIO_STR} - {HORARIO_FIN_STR}
@@ -59,17 +57,17 @@ const DIVIDER_SVG = `<svg viewBox="0 0 1200 40" preserveAspectRatio="none" fill=
           </li>
           <li>
             <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
-              Equipo
+              Sábados
             </p>
-            <p class="mt-1 font-serif text-[16px] text-[var(--color-ink)]">3 profesionales</p>
+            <p class="mt-1 font-serif text-[16px] text-[var(--color-ink)]">
+              {HORARIO_INICIO_STR} - 21:00
+            </p>
           </li>
           <li>
             <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
-              Reserva
+              Equipo
             </p>
-            <p class="mt-1 font-serif text-[16px] text-[var(--color-ink)]">
-              Confirmación al instante
-            </p>
+            <p class="mt-1 font-serif text-[16px] text-[var(--color-ink)]">5 profesionales</p>
           </li>
         </ul>
       </div>
@@ -94,7 +92,7 @@ const DIVIDER_SVG = `<svg viewBox="0 0 1200 40" preserveAspectRatio="none" fill=
   </section>
 
   <!-- Soft organic divider -->
-  <div class="aurora-divider mt-24 sm:mt-32" set:html={DIVIDER_SVG} />
+  <AuroraDivider class="mt-24 sm:mt-32" />
 
   <!-- SERVICIOS -->
   <section id="servicios" class="container-x mt-16 sm:mt-24">
@@ -146,7 +144,7 @@ const DIVIDER_SVG = `<svg viewBox="0 0 1200 40" preserveAspectRatio="none" fill=
   </section>
 
   <!-- Soft organic divider -->
-  <div class="aurora-divider mt-24 sm:mt-32" set:html={DIVIDER_SVG} />
+  <AuroraDivider class="mt-24 sm:mt-32" />
 
   <!-- PROFESIONAL DEL MES -->
   <section class="container-x mt-16 sm:mt-24">

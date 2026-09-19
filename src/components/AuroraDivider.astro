@@ -1,0 +1,22 @@
+---
+/**
+ * AuroraDivider — organic SVG horizon used between sections.
+ *
+ * Centralizes the inline DIVIDER_SVG constant that was duplicated in
+ * 8 pages. The path is an asymmetric Bézier curve, not a hard rectangle,
+ * so the divider reads as a soft "horizon" instead of a separator.
+ *
+ * The `class` prop accepts the spacing utility (mt-16, mt-24 sm:mt-32, etc.).
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className = "mt-16" } = Astro.props;
+---
+
+<div class:list={["aurora-divider", className]} aria-hidden="true">
+  <svg viewBox="0 0 1200 40" preserveAspectRatio="none" fill="currentColor">
+    <path d="M0 26 C 240 8 480 38 720 22 C 920 8 1080 30 1200 18 L 1200 40 L 0 40 Z" />
+  </svg>
+</div>

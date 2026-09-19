@@ -116,8 +116,10 @@ export default function RescheduleFlow({
     const validacion = validarSlotLibre(reservasSinMias, {
       fecha: newFecha,
       hora: newHora,
-      duracionMin: servicio.duracionMin,
+      duracionTotalMin: reserva.duracionTotalMin || servicio.duracionMin,
       profesionalId: reserva.profesionalId,
+      servicioId: reserva.servicioId,
+      servicioIds: reserva.servicioIds ?? [reserva.servicioId],
     });
     if (!validacion.ok) {
       // eslint-disable-next-line no-alert

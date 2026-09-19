@@ -1,0 +1,36 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import AuroraDivider from "../components/AuroraDivider.astro";
+import AdminPanel from "../components/admin/AdminPanel";
+---
+
+<Base
+  title="Administración - Estética Aurora"
+  description="Panel interno para ver, editar y cancelar reservas guardadas en este navegador."
+  active="admin"
+>
+  <Header slot="header" active="admin" />
+
+  <section class="container-x pt-28 sm:pt-36">
+    <p class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--color-muted)]">
+      Administración
+    </p>
+    <h1 class="display-italic mt-3 max-w-[18ch] font-serif text-[clamp(2.2rem,6vw,4.4rem)] leading-[1.04] text-[var(--color-ink)]">
+      La agenda <em>completa</em> en una sola vista.
+    </h1>
+    <p class="mt-6 max-w-[60ch] text-[16px] leading-relaxed text-[var(--color-ink-2)]">
+      Listado agrupado por día, con acciones rápidas para editar o cancelar cada
+      reserva. Pensado para usar en una tablet o notebook detrás del mostrador.
+    </p>
+  </section>
+
+  <AuroraDivider />
+
+  <section class="container-x mt-12 mb-32">
+    <AdminPanel client:load />
+  </section>
+
+  <Footer slot="footer" />
+</Base>
